@@ -22,7 +22,7 @@ jobs:
         run: brew install make xz
 
       # ─────────────────────────────
-      # Theos setup
+      # Theos
       # ─────────────────────────────
       - name: Setup Theos
         run: |
@@ -31,15 +31,15 @@ jobs:
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
       # ─────────────────────────────
-      # SDK setup
+      # iOS SDK
       # ─────────────────────────────
-      - name: Setup iOS SDK
+      - name: Setup SDK
         run: |
           rm -rf $HOME/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
 
       # ─────────────────────────────
-      # PSHeader setup
+      # PSHeader
       # ─────────────────────────────
       - name: Setup PSHeader
         run: |
@@ -48,7 +48,16 @@ jobs:
           cp -R PSHeader/* $THEOS/include/PSHeader/
 
       # ─────────────────────────────
-      # Build tweak (dylib only)
+      # YouTubeHeader
+      # ─────────────────────────────
+      - name: Setup YouTubeHeader
+        run: |
+          git clone https://github.com/Ihaveadream19/YouTubeHeader.git YouTubeHeader
+          mkdir -p $THEOS/include/YouTubeHeader
+          cp -R YouTubeHeader/* $THEOS/include/YouTubeHeader/
+
+      # ─────────────────────────────
+      # Build tweak
       # ─────────────────────────────
       - name: Build tweak
         run: |
@@ -56,18 +65,12 @@ jobs:
           make
 
       # ─────────────────────────────
-      # Collect dylib
-      # ─────────────────────────────
-      - name: Collect output
-        run: |
-          mkdir -p output
-          find .theos -name "*.dylib" -exec cp {} output/ \;
-
-      # ─────────────────────────────
-      # Upload artifact
+      # Upload output
       # ─────────────────────────────
       - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: Return-YouTube-Dislikes-dylib
-          path: output/
+          name: Return-YouTube-Dislikes
+          path: |
+            .theos/**/*.dylib
+            packages/

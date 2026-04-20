@@ -9,39 +9,65 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      # ─────────────────────────────
+      # Checkout
+      # ─────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ─────────────────────────────
+      # Tools
+      # ─────────────────────────────
       - name: Install tools
         run: brew install make xz
 
-      # ───────── THEOS ─────────
+      # ─────────────────────────────
+      # Theos setup
+      # ─────────────────────────────
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git $HOME/theos
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
-      # ───────── SDK ─────────
-      - name: Setup SDK
+      # ─────────────────────────────
+      # SDK setup
+      # ─────────────────────────────
+      - name: Setup iOS SDK
         run: |
           rm -rf $HOME/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
 
-      # ───────── YouTubeHeader ─────────
-      - name: Setup YouTubeHeader
+      # ─────────────────────────────
+      # PSHeader setup
+      # ─────────────────────────────
+      - name: Setup PSHeader
         run: |
-          git clone https://github.com/PoomSmart/YouTubeHeader.git $HOME/theos/include/YouTubeHeader
+          git clone https://github.com/Ihaveadream19/PSHeader.git PSHeader
+          mkdir -p $THEOS/include/PSHeader
+          cp -R PSHeader/* $THEOS/include/PSHeader/
 
-      # ───────── BUILD ─────────
+      # ─────────────────────────────
+      # Build tweak (dylib only)
+      # ─────────────────────────────
       - name: Build tweak
         run: |
-          make clean
-          make package FINALPACKAGE=1
+          make clean || true
+          make
 
-      # ───────── OUTPUT ─────────
-      - name: Upload package
+      # ─────────────────────────────
+      # Collect dylib
+      # ─────────────────────────────
+      - name: Collect output
+        run: |
+          mkdir -p output
+          find .theos -name "*.dylib" -exec cp {} output/ \;
+
+      # ─────────────────────────────
+      # Upload artifact
+      # ─────────────────────────────
+      - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: Return-YouTube-Dislikes
-          path: packages/
+          name: Return-YouTube-Dislikes-dylib
+          path: output/

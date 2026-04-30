@@ -52,6 +52,16 @@ jobs:
 
           chmod +x $HOME/theos/bin/dm.pl
 
+      - name: Install PSHeader
+
+        run: |
+
+          git clone https://github.com/PoomSmart/PSHeader.git
+
+          mkdir -p $HOME/theos/include/PSHeader
+
+          cp -r PSHeader/*.h $HOME/theos/include/PSHeader/
+
       - name: Build Package
 
         run: |

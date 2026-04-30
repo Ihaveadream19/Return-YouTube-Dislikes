@@ -62,6 +62,50 @@ jobs:
 
           cp -r PSHeader/*.h $HOME/theos/include/PSHeader/
 
+      - name: Create YouTubeHeader stubs
+
+        run: |
+
+          mkdir -p $HOME/theos/include/YouTubeHeader
+
+          cat > $HOME/theos/include/YouTubeHeader/YTSettingsCell.h << 'EOF'
+
+          @interface YTSettingsCell : NSObject
+
+          @end
+
+          EOF
+
+          cat > $HOME/theos/include/YouTubeHeader/YTSettingsSectionItem.h << 'EOF'
+
+          @interface YTSettingsSectionItem : NSObject
+
+          + (instancetype)itemWithTitle:(id)title accessibilityIdentifier:(id)identifier detailTextBlock:(id)block selectBlock:(id)select;
+
+          @property (nonatomic, retain) id settingIcon;
+
+          @end
+
+          EOF
+
+          cat > $HOME/theos/include/YouTubeHeader/YTIIcon.h << 'EOF'
+
+          @interface YTIIcon : NSObject
+
+          @property (nonatomic, assign) NSInteger iconType;
+
+          @end
+
+          EOF
+
+          # fallback dummy (wichtig damit weitere imports nicht crashen)
+
+          for f in YTSettingsViewController YTSettingsGroupData YTSettingsSectionItemManager YTAppSettingsPresentationData; do
+
+            echo "@interface $f : NSObject @end" > $HOME/theos/include/YouTubeHeader/$f.h
+
+          done
+
       - name: Build Package
 
         run: |

@@ -26,11 +26,13 @@ jobs:
 
           git clone https://github.com/theos/theos.git $HOME/theos
 
-          git -C $HOME/theos submodule update --init --recursive
+          export THEOS=$HOME/theos
 
-          $HOME/theos/bin/update-theos
+          git -C $THEOS submodule update --init --recursive
 
-          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          $THEOS/bin/update-theos
+
+          echo "THEOS=$THEOS" >> $GITHUB_ENV
 
       - name: Install Dependencies
 

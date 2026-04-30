@@ -1,10 +1,12 @@
-name: Build Return YouTube Dislikes
+name: Build
 
 on:
 
-  workflow_dispatch:
-
   push:
+
+    branches: [ main ]
+
+  workflow_dispatch:
 
 jobs:
 
@@ -14,150 +16,62 @@ jobs:
 
     steps:
 
-      # ─────────────────────────────
-
-      # Checkout
-
-      # ─────────────────────────────
-
       - name: Checkout
 
         uses: actions/checkout@v4
-
-      # ─────────────────────────────
-
-      # Tools
-
-      # ─────────────────────────────
-
-      - name: Install tools
-
-        run: brew install make xz ldid
-
-      # ─────────────────────────────
-
-      # Theos
-
-      # ─────────────────────────────
 
       - name: Setup Theos
 
         run: |
 
-          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          git clone --depth=1 https://github.com/theos/theos.git $HOME/theos
 
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
-          echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
-
-      # ─────────────────────────────
-
-      # SDK
-
-      # ─────────────────────────────
-
-      - name: Setup SDK
+      - name: Install Dependencies
 
         run: |
 
-          rm -rf $HOME/theos/sdks
+          brew install ldid dpkg make perl
 
-          git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
+          sudo cpan -T install Data::UUID
 
-      # ─────────────────────────────
-
-      # PSHeader
-
-      # ─────────────────────────────
-
-      - name: Setup PSHeader
+      - name: Fix dm.pl (packaging)
 
         run: |
 
-          git clone https://github.com/Ihaveadream19/PSHeader.git PSHeader
+          mkdir -p $HOME/theos/bin
 
-          mkdir -p $THEOS/include/PSHeader
+          curl -L https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl -o $HOME/theos/bin/dm.pl
 
-          cp -R PSHeader/* $THEOS/include/PSHeader/
+          chmod +x $HOME/theos/bin/dm.pl
 
-      # ─────────────────────────────
-
-      # YouTubeHeader
-
-      # ─────────────────────────────
-
-      - name: Setup YouTubeHeader
+      - name: Build Package
 
         run: |
 
-          git clone https://github.com/Ihaveadream19/YouTubeHeader.git YouTubeHeader
+          export THEOS=$HOME/theos
 
-          mkdir -p $THEOS/include/YouTubeHeader
+          export PATH=$THEOS/bin:$PATH
 
-          cp -R YouTubeHeader/* $THEOS/include/YouTubeHeader/
+          make clean package FINALPACKAGE=1
 
-      # ─────────────────────────────
-
-      # Build tweak
-
-      # ─────────────────────────────
-
-      - name: Build tweak
-
-        run: |
-
-          make clean || true
-
-          make
-
-      # ─────────────────────────────
-
-      # Collect ALL required files
-
-      # ─────────────────────────────
-
-      - name: Collect final files
-
-        run: |
-
-          mkdir -p output
-
-          # dylib
-
-          find .theos -name "*.dylib" -exec cp {} output/ \;
-
-          # plist (Loader)
-
-          cp YouTubeDislikesReturn.plist output/
-
-          # Bundle (SEHR WICHTIG)
-
-          cp -R layout/Library/Application\ Support/RYD.bundle output/
-
-      # ─────────────────────────────
-
-      # Debug (optional)
-
-      # ─────────────────────────────
-
-      - name: Show output
-
-        run: |
-
-          ls -R output
-
-      # ─────────────────────────────
-
-      # Upload
-
-      # ─────────────────────────────
-
-      - name: Upload final files
+      - name: Upload .deb
 
         uses: actions/upload-artifact@v4
 
         with:
 
-          name: Return-YouTube-Dislikes
+          name: package
 
-          path: output/
+          path: packages/*.deb
+
+      - name: Upload .dylib
+
+        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: dylib
+
+          path: .theos/obj/debug/*.dylib

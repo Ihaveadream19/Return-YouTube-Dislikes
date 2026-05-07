@@ -48,13 +48,11 @@ jobs:
 
           mkdir -p $HOME/theos/bin
 
-          curl -L https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl \
+          curl -L "https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl" -o "$HOME/theos/bin/dm.pl"
 
-            -o $HOME/theos/bin/dm.pl
+          chmod +x "$HOME/theos/bin/dm.pl"
 
-          chmod +x $HOME/theos/bin/dm.pl
-
-      - name: Build
+      - name: Build Package
 
         run: |
 

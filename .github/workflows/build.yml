@@ -36,11 +36,21 @@ jobs:
 
           sudo cpan -T install Data::UUID
 
-      - name: Clone YouTubeHeader
+      - name: Clone Headers
 
         run: |
 
           git clone https://github.com/PoomSmart/YouTubeHeader.git $HOME/theos/include/YouTubeHeader
+
+          mkdir -p $HOME/theos/include/PSHeader
+
+          cat > $HOME/theos/include/PSHeader/Misc.h << 'EOF'
+
+          #import <Foundation/Foundation.h>
+
+          #define PS_ROOT_PATH_NS(path) path
+
+          EOF
 
       - name: Fix dm.pl
 
@@ -71,17 +81,3 @@ jobs:
           name: package
 
           path: packages/*.deb
-
-      - name: Upload Dylib
-
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: dylib
-
-          path: |
-
-            .theos/obj/debug/*.dylib
-
-            .theos/obj/*.dylib

@@ -56,11 +56,11 @@ jobs:
 
         run: |
 
-          mkdir -p $HOME/theos/bin
+          rm -f $HOME/theos/bin/dm.pl
 
-          curl -L "https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl" -o "$HOME/theos/bin/dm.pl"
+          curl -L https://raw.githubusercontent.com/theos/theos/master/vendor/dm.pl/dm.pl -o $HOME/theos/bin/dm.pl
 
-          chmod +x "$HOME/theos/bin/dm.pl"
+          chmod +x $HOME/theos/bin/dm.pl
 
       - name: Build Package
 

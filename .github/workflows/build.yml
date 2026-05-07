@@ -24,15 +24,9 @@ jobs:
 
         run: |
 
-          git clone https://github.com/theos/theos.git $HOME/theos
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
 
-          export THEOS=$HOME/theos
-
-          git -C $THEOS submodule update --init --recursive
-
-          $THEOS/bin/update-theos
-
-          echo "THEOS=$THEOS" >> $GITHUB_ENV
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
       - name: Install Dependencies
 
@@ -42,125 +36,25 @@ jobs:
 
           sudo cpan -T install Data::UUID
 
-      - name: Fix dm.pl (packaging)
+      - name: Clone YouTubeHeader
+
+        run: |
+
+          git clone https://github.com/PoomSmart/YouTubeHeader.git $HOME/theos/include/YouTubeHeader
+
+      - name: Fix dm.pl
 
         run: |
 
           mkdir -p $HOME/theos/bin
 
-          curl -L https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl -o $HOME/theos/bin/dm.pl
+          curl -L https://raw.githubusercontent.com/theos/theos/master/bin/dm.pl \
+
+            -o $HOME/theos/bin/dm.pl
 
           chmod +x $HOME/theos/bin/dm.pl
 
-      - name: Create YouTubeHeader stubs
-
-        run: |
-
-          mkdir -p $HOME/theos/include/YouTubeHeader
-
-          cat > $HOME/theos/include/YouTubeHeader/YTSettingsGroupData.h << 'EOF'
-
-          @interface YTSettingsGroupData : NSObject
-
-          @property (nonatomic, assign) NSInteger type;
-
-          @end
-
-          EOF
-
-          cat > $HOME/theos/include/YouTubeHeader/YTSettingsCell.h << 'EOF'
-
-          @interface YTSettingsCell : NSObject
-
-          @end
-
-          EOF
-
-          cat > $HOME/theos/include/YouTubeHeader/YTIIcon.h << 'EOF'
-
-          @interface YTIIcon : NSObject
-
-          @property (nonatomic, assign) NSInteger iconType;
-
-          @end
-
-          # fallback constant
-
-          #ifndef YT_DISLIKE
-
-          #define YT_DISLIKE 0
-
-          #endif
-
-          EOF
-
-          cat > $HOME/theos/include/YouTubeHeader/YTSettingsSectionItem.h << 'EOF'
-
-          @interface YTSettingsSectionItem : NSObject
-
-          + (instancetype)itemWithTitle:(id)title
-
-            accessibilityIdentifier:(id)identifier
-
-            detailTextBlock:(id)block
-
-            selectBlock:(id)select;
-
-          + (instancetype)switchItemWithTitle:(id)title
-
-            titleDescription:(id)desc
-
-            accessibilityIdentifier:(id)identifier
-
-            switchOn:(BOOL)on
-
-            switchBlock:(id)block
-
-            settingItemId:(NSInteger)itemId;
-
-          @property (nonatomic, retain) id settingIcon;
-
-          @end
-
-          EOF
-
-          cat > $HOME/theos/include/YouTubeHeader/YTSettingsViewController.h << 'EOF'
-
-          @interface YTSettingsViewController : NSObject
-
-          - (void)setSectionItems:(id)items
-
-                     forCategory:(NSInteger)category
-
-                           title:(id)title
-
-                            icon:(id)icon
-
-               titleDescription:(id)desc
-
-                    headerHidden:(BOOL)hidden;
-
-          - (void)setSectionItems:(id)items
-
-                     forCategory:(NSInteger)category
-
-                           title:(id)title
-
-               titleDescription:(id)desc
-
-                    headerHidden:(BOOL)hidden;
-
-          @end
-
-          EOF
-
-          for f in YTSettingsSectionItemManager YTAppSettingsPresentationData; do
-
-            echo "@interface $f : NSObject @end" > $HOME/theos/include/YouTubeHeader/$f.h
-
-          done
-
-      - name: Build Package
+      - name: Build
 
         run: |
 
@@ -170,7 +64,7 @@ jobs:
 
           make clean package FINALPACKAGE=1
 
-      - name: Upload .deb
+      - name: Upload DEB
 
         uses: actions/upload-artifact@v4
 
@@ -180,7 +74,7 @@ jobs:
 
           path: packages/*.deb
 
-      - name: Upload .dylib
+      - name: Upload Dylib
 
         uses: actions/upload-artifact@v4
 
@@ -188,4 +82,8 @@ jobs:
 
           name: dylib
 
-          path: .theos/obj/debug/*.dylib
+          path: |
+
+            .theos/obj/debug/*.dylib
+
+            .theos/obj/*.dylib
